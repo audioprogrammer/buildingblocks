@@ -21,15 +21,8 @@ public:
 
 private:
 
-    // Writes a sample to the delay
-    void Write(float sample);
-
-    // Reads a sample from the delay
-    float Read();
-
     unsigned                 size;
-    unsigned                 readPosition;
-    unsigned                 writePosition;
+    unsigned                 head;
     std::unique_ptr<float[]> data;
 };
 

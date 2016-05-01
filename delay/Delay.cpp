@@ -4,8 +4,7 @@
 
 Delay::Delay(unsigned size)
     : size(size)
-    , readPosition(0u)
-    , writePosition(0u)
+    , head(0u)
 {
     data = std::unique_ptr<float[]>(new float[size]);
     assert(data);
@@ -17,9 +16,9 @@ float Delay::Delayed(unsigned delay)
     // only allow delay requests smaller than the delay size
     assert(delay < size);
 
-    const int      delta = (readPosition - delay);
+    const int      delta = (head - delay);
     const unsigned index = (delta >= 0) ? delta
-        : delta + size;
+                                        : delta + size;
 
     assert(index < size);
     return data[index];
@@ -27,8 +26,18 @@ float Delay::Delayed(unsigned delay)
 
 float Delay::Process(float in)
 {
-    float const out = Read();
-    Write(in);
+    const float out = data[head];
+
+    //write sample
+    const int      delta = (head - size);
+    const unsigned tail  = (delta >= 0) ? delta
+                                        : delta + size;
+    data[tail] = in;
+
+    // update head
+    ++head;
+    if (head >= size)
+        head = 0u;
 
     return out;
 }
@@ -36,31 +45,6 @@ float Delay::Process(float in)
 void Delay::Reset()
 {
     memset(data.get(), 0, (size * sizeof(float)));
-    writePosition = 0u;
-    readPosition  = 0u;
-}
-
-void Delay::Write(float sample)
-{
-    //write sample
-    data[writePosition] = sample;
-
-    //update position
-    ++writePosition;
-    if (writePosition >= size)
-        writePosition = 0u;
-}
-
-float Delay::Read()
-{
-    // read sample
-    float const sample = data[readPosition];
-
-    // update read position
-    ++readPosition;
-    if (readPosition >= size)
-        readPosition = 0u;
-
-    return sample;
+    head = 0u;
 }
 
