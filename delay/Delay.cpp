@@ -26,13 +26,11 @@ float Delay::Delayed(unsigned delay)
 
 float Delay::Process(float in)
 {
+    // read sample from delay data
     const float out = data[head];
 
-    //write sample
-    const int      delta = (head - size);
-    const unsigned tail  = (delta >= 0) ? delta
-                                        : delta + size;
-    data[tail] = in;
+    // write sample
+    data[head] = in;
 
     // update head
     ++head;
